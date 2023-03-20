@@ -257,3 +257,18 @@ class WebBase(FWBase):
             WebDriverWait(self.GetDriver(), self.manager.settings.time_element_Wait).until_not(EC.visibility_of_element_located(locator))
         except:
             self.allure_screenshot()
+
+    def waiting_loading_tag(self, locator, attribute, loading):
+        index = 0
+        while True:
+            try:
+                if self.manager.settings.time_element_Wait < index:
+                    break
+                text = self.find_element(locator).get_attribute(attribute)
+                if loading in text:
+                    sleep(0.5)
+                    index = index + 0.7
+                else:
+                    break
+            except NoSuchElementException:
+                break
