@@ -1,6 +1,5 @@
 import time
 
-from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 import allure
 
@@ -19,7 +18,11 @@ class Locator:
     preloader = (By.XPATH, '//div[contains(@class, "Spin2_progress")]')
     button_phone = (By.XPATH, '//button[@data-type="phone"]')
     input_phone_number = (By.XPATH, '//input[contains(@class, "Textinput-Control_phone")]')
-
+    button_change_user = (By.XPATH, '//div[contains(@class, "profileMenuButton-3D")]/..//span[@class="zen-ui-button2__content"]')
+    button_context_menu = (By.XPATH, '//button[@class="ContextMenuButton"]')
+    button_log_off_from_account = (By.XPATH, '//span[contains(@class, "PasspIcon_exit")]')
+    button_log_off_and_delete_info_user_from_list = (By.XPATH, '//span[contains(@class, "PasspIcon_trash")]')
+    button_log_in_to_another_account = (By.XPATH, '//a[@data-t="account-list-item-add"]')
 
 class TestFW(WebBase):
 
@@ -71,23 +74,75 @@ class TestFW(WebBase):
     def check_preloader_is_miss(self):
         index = 0
         while True:
-            try:
-                if self.manager.settings.time_element_Wait < index:
-                    return False
-                preloader = self.find_elements(Locator.preloader)
-                if len(preloader) > 0:
-                    time.sleep(0.5)
-                    index = index + 0.7
-                else:
-                    return False
-            except NoSuchElementException:
+            if self.manager.settings.time_element_Wait < index:
                 return False
+            preloader = self.check_is_there_element_on_the_page(Locator.preloader)
+            if preloader == True:
+                time.sleep(0.5)
+                index = index + 0.7
+            else:
+                return True
 
-    @allure.step('Возвращает текст ошибки ессли она есть')
+
+    @allure.step('Возвращает текст ошибки если она есть')
     def get_reason_error_if_it_is(self):
         result = self.find_elements(Locator.error)
         if len(result) == 0:
             return self
         else:
             return self.get_tag_text(Locator.error)
+
+    @allure.step('Нажимаем кнопку Выбрать другой')
+    def click_button_change_user(self):
+        self.click_element(Locator.button_change_user)
+        return self
+
+    @allure.step('Выбор пользователя для входа (среди выбранных)')
+    def select_user_for_sign_in(self, login):
+        time.sleep(1)
+        xpath = (By.XPATH, f'//div[text()="{login}"]/../../../..//a[contains(@class, "AuthAccountListItem")]')
+        self.click_element(xpath)
+        return self
+
+    @allure.step('Нажимаем на меню с действиями напротив аккаунта')
+    def click_button_context_menu(self):
+        self.click_element(Locator.button_context_menu)
+        return self
+
+    @allure.step('Выходим из профиля на странице авторизации')
+    def log_off_from_page_authorisation(self):
+        # Нажимаем на кнопку меню с действиями
+        self.click_button_context_menu()
+        # тайм-аут из-за анимации
+        time.sleep(0.5)
+        # Нажимаем на кнопку Выйти из профиля
+        self.click_element(Locator.button_log_off_from_account)
+        # Ожидаем, пока прелоадер прогрузится
+        self.check_preloader_is_miss()
+        return self
+
+    @allure.step('Выходим из профиля и удаляем информацию о пользователе из списка')
+    def log_off_and_delete_info_about_user_from_list(self):
+        # Нажимаем на кнопку меню с действиями
+        self.click_button_context_menu()
+        # тайм-аут из-за анимации
+        time.sleep(0.5)
+        # Нажимаем на кнопку Выйти из профиля
+        self.click_element(Locator.button_log_off_and_delete_info_user_from_list)
+        return self
+
+    @allure.step('Проверка нахождения формы ввода пароля на странице')
+    def check_form_for_input_password(self):
+        return self.check_is_there_element_on_the_page(Locator.input_password)
+
+    @allure.step('Проверка нахождения формы ввода логина на странице')
+    def check_form_for_input_login(self):
+        return self.check_is_there_element_on_the_page(Locator.input_login)
+
+    @allure.step('Нажимаем кнопку Войти в другой аккаунт')
+    def click_button_log_in_to_another_account(self):
+        self.click_element(Locator.button_log_in_to_another_account)
+        return self
+
+
 

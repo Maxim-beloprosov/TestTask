@@ -9,10 +9,10 @@ class WebBase():
         self.APP.web_base.open_main_page()
 
     def setup_method(self):
-        pass
+        self.APP.web_base.open_main_page()
 
     def teardown_method(self):
-        pass
+        self.APP.driver_instance.stop_driver()
 
     def teardown_class(self):
         self.APP.driver_instance.stop_driver()
